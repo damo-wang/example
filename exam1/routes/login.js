@@ -1,35 +1,34 @@
 var express = require('express');
 var router = express.Router();
-/* GET users listing. */
-var userinfo = [{ user: 'admin', pwd: '123456' }, { user: 'wang', pwd: '111222' }];
+var mysql = require('mysql');
+var connect = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'will1314', //你的数据库密码
+    port: 3306,
+    database: 'exam1' //你的数据库名称
+});
 
-function authentication(_user, _pwd) {
-    for (i in userinfo) {
-        if (userinfo[i].user == _user) {
-            if (userinfo[i].pwd == _pwd) {
-                return 0; //验证成功
-            }
-            return 1; //密码错误
-        }
-    }
-    return 2; //没有该用户
-}
 router.get('/', function(req, res, next) {
-    switch (authentication(req.query.user, req.query.pwd)) {
-        case 0:
-            res.end(JSON.stringify({ 'code': 'ok', 'msg': '欢迎' + req.query.user + "登录" }));
-            break;
-        case 1:
-            res.end(JSON.stringify({ 'code': 'err', 'msg': 'password error' }));
-            break;
-        case 2:
+    var _user = req.query.user;
+    var _pwd = req.query.pwd;
+    var sql = 'SELECT _name,_pwd FROM e_user where _name = "' + _user + '"';
+    connect.query(sql, function(err, result) {
+        console.log('查询结束');
+        if (err) {
+            console.log('[SELECT ERROR] - ', err.message);
+        }
+        if (result.length == 0) {
             res.end(JSON.stringify({ 'code': 'err', 'msg': 'user not found' }));
-            break;
-        default:
-            next();
-            break;
-    }
-    console.log('返回结束');
+        } else {
+            if (result[0]._name == _user && result[0]._pwd == _pwd) {
+                res.end(JSON.stringify({ 'code': 'ok', 'msg': '登录成功' }));
+            } else {
+                res.end(JSON.stringify({ 'code': 'err', 'msg': 'password error' }));
+            }
+        }
+        console.log(result);
+    });
 });
 
 module.exports = router;
