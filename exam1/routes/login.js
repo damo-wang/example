@@ -19,11 +19,14 @@ router.get('/', function(req, res, next) {
             console.log('[SELECT ERROR] - ', err.message);
         }
         if (result.length == 0) {
+            res.contentType = "application/json";
             res.end(JSON.stringify({ 'code': 'err', 'msg': 'user not found' }));
         } else {
             if (result[0]._name == _user && result[0]._pwd == _pwd) {
+                res.contentType = "text/html";
                 res.end(JSON.stringify({ 'code': 'ok', 'msg': '登录成功' }));
             } else {
+                res.contentType = "application/json";
                 res.end(JSON.stringify({ 'code': 'err', 'msg': 'password error' }));
             }
         }
